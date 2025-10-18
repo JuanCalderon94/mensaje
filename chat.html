@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat en tiempo real (auto-recepción)</title>
+  <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f2f2f2;
+    }
+
+    #chat-container {
+      width: 100%;
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    #messages {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 10px;
+      background-color: #fafafa;
+    }
+
+    .message {
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 6px;
+      width: fit-content;
+      max-width: 80%;
+    }
+
+    .sent {
+      background-color: #c8e6c9;
+      align-self: flex-end;
+      margin-left: auto;
+    }
+
+    .received {
+      background-color: #e0e0e0;
+      align-self: flex-start;
+    }
+
+    #messages {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #input-message {
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat-container">
+    <h2>Chat en Tiempo Real (contigo mismo)</h2>
+    <div id="messages"></div>
+    <input type="text" id="input-message" placeholder="Escribe un mensaje y presiona Enter..." />
+  </div>
+
+  <script>
+    // Inicializar Pusher (solo para mantener compatibilidad, pero aquí no lo usamos)
+    Pusher.logToConsole = true;
+    var pusher = new Pusher('92e747b6f7fc4ccfa198', { cluster: 'us2' });
+
+    const channel = pusher.subscribe('my-channel');
+
+    // Cuando llega un mensaje remoto (simulado)
+    channel.bind('my-event', function(data) {
+      addMessage(data.message, "received");
+    });
+
+    const input = document.getElementById('input-message');
+
+    // Escuchar tecla Enter
+    input.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        const message = input.value.trim();
+        if (message !== '') {
+          // Mostrar mensaje enviado
+          addMessage(message, "sent");
+
+          // Simular recibir el mismo mensaje como si fuera otro usuario
+          setTimeout(() => {
+            addMessage("Tú mismo: " + message, "received");
+          }, 500);
+
+          input.value = '';
+        }
+      }
+    });
+
+    // Función para agregar mensajes al contenedor
+    function addMessage(text, type) {
+      const messageContainer = document.getElementById('messages');
+      const msg = document.createElement('div');
+      msg.className = 'message ' + type;
+      msg.textContent = text;
+      messageContainer.appendChild(msg);
+      messageContainer.scrollTop = messageContainer.scrollHeight;
+    }
+  </script>
+</body>
+</html>
